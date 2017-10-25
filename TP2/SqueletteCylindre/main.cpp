@@ -3,7 +3,7 @@
 #include <math.h>
 #include <vector>
 #include <stdlib.h>
-#include <GL/glut.h>
+#include "../../GL/glut.h"
 #include "struct.h"
 
 /* au cas ou M_PI ne soit defini */
@@ -326,8 +326,8 @@ void display(void)
 			//glRotatef(-90,1.0f,0.0f,0.0f);
 			// C'est ici que l'on dessine notre cylindre
 			// Il n'y a pour l'instant qu'un triangle gris ...
-			coneTronque(10, 8, 6, 20);
-			cone(10, 8, 20);
+			coneTronque(10, 20, 6, 20);
+			//cone(10, 8, 20);
 
 			// Exemple d'appel à Point3
 			point3 p1 = point3(-1.0,1.0,0.0);

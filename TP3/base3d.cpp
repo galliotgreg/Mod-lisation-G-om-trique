@@ -1,9 +1,8 @@
 #include <stdio.h>      
 #include <stdlib.h>     
 #include <math.h>
-#include "C:\Users\greg\source\repos\TP3\TP3\glut.h"
-#include "C:\Users\greg\source\repos\TP3\TP3\struct.h"
-
+#include "glut.h"
+#include "struct.h"
 
 #define WIDTH  480
 #define HEIGHT 480

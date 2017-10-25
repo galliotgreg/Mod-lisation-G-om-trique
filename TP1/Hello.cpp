@@ -40,7 +40,8 @@
  * This is a simple, introductory OpenGL program.
  */
 #define _USE_MATH_DEFINES
-#include <GL/glut.h>
+
+#include"glut.h"
 #include <math.h>
 
 

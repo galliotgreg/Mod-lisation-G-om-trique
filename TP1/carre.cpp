@@ -20,7 +20,7 @@ Vous pouvez ensuite y faire référence en spécifiant le chemin dans visual. Vous 
 Si vous mettez glut dans le répertoire courant, on aura alors #include "glut.h" 
 */
 
-#include <glut.h> 
+#include "glut.h"
 
 // Définition de la taille de la fenêtre
 #define WIDTH  480

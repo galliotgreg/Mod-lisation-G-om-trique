@@ -5,9 +5,10 @@
  */
 
 
+#include <Windows.h>
 #include <gl\GLU.h>
 #include <gl\GL.h>
-#include <gl\glut.h>
+#include "glut.h"
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
