@@ -11,6 +11,7 @@ struct sMaillage
 	int nbSommets;
 	int nbFacettes;
 	int nbAretes;
+	float maxCoord = 0.0;
 	point3 gravity = point3(0,0,0);
 	vector<point3> sommets;
 	vector<vector<long>> facettes;
@@ -75,7 +76,7 @@ GLvoid window_reshape(GLsizei width, GLsizei height)
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glOrtho(-0.2, 0.2, -0.2, 0.2, -0.2, 0.2);
+	glOrtho(-1, 1, -1, 1, -1, 1);
 
 	// toutes les transformations suivantes s´appliquent au modèle de vue 
 	glMatrixMode(GL_MODELVIEW);
@@ -160,9 +161,15 @@ point3 creationPoint(string ligne) {
 		token = ligne.substr(0, pos);
 		if (i == 1) {
 			point.x = stof(token);
+			if(maillage.maxCoord < abs(point.x) ) {
+				maillage.maxCoord = abs(point.x);
+			}
 		}
 		else if (i == 2) {
 			point.y = stof(token);
+			if (maillage.maxCoord < abs(point.y)) {
+				maillage.maxCoord = abs(point.y);
+			}
 		}
 		else {
 			cout << "Problème avec le point" << i+2 << endl;
@@ -171,6 +178,9 @@ point3 creationPoint(string ligne) {
 		ligne.erase(0, pos + delimiter.length());
 	}
 	point.z = stof(ligne);
+	if (maillage.maxCoord < abs(point.z)) {
+		maillage.maxCoord = abs(point.z);		
+	}
 	maillage.gravity.x += point.x;
 	maillage.gravity.y += point.y;
 	maillage.gravity.z += point.z;
@@ -258,6 +268,15 @@ void centrageDuMaillage() {
 	}
 }
 
+void normalisationDuMaillage() {
+	for (int i = 0; i < maillage.nbSommets; i++) {
+		maillage.sommets[i].x /= maillage.maxCoord;
+		cout << maillage.sommets[i].x << endl;
+		maillage.sommets[i].y /= maillage.maxCoord;
+		maillage.sommets[i].z /= maillage.maxCoord;
+	}
+}
+
 int main(int argc, char **argv)
 {
 
@@ -272,9 +291,12 @@ int main(int argc, char **argv)
 
 	stockage(fichier);
 	maillage.gravity /= maillage.nbSommets;
+	
 	cout << maillage.gravity << endl;
-
 	centrageDuMaillage();
+
+	cout << maillage.maxCoord << endl;
+	normalisationDuMaillage();
 
 	//system("pause");
 
