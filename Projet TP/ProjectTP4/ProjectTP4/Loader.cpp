@@ -2,6 +2,7 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include <random>
 #include "../../../GL/glut.h"
 
 using namespace std;
@@ -14,7 +15,7 @@ struct sMaillage
 	float maxCoord = 0.0;
 	point3 gravity = point3(0,0,0);
 	vector<point3> sommets;
-	vector<vector<long>> facettes;
+	vector<vector<int>> facettes;
 } maillage;
 
 string nbSom, nbFac, nbAre;
@@ -111,7 +112,7 @@ void render_scene()
 	glRotatef(zRotated, 0, 1, 0);
 	for (int i = 0; i < maillage.nbFacettes;i++) {
 
-		vector<long> facetteGL = maillage.facettes[i];
+		vector<int> facetteGL = maillage.facettes[i];
 		
 		//cout << facetteGL[1] << facetteGL[2] << facetteGL[3] << endl;
 
@@ -188,12 +189,12 @@ point3 creationPoint(string ligne) {
 	return point;
 }
 
-vector<long> creationFacette(string ligne) {
+vector<int> creationFacette(string ligne) {
 	size_t pos = 0;
 	string delimiter = " ";
 	string token;
 	int i = 1;
-	vector<long> facette;
+	vector<int> facette;
 
 	while ((pos = ligne.find(delimiter)) != std::string::npos) {
 		token = ligne.substr(0, pos);
@@ -270,12 +271,52 @@ void centrageDuMaillage() {
 
 void normalisationDuMaillage() {
 	for (int i = 0; i < maillage.nbSommets; i++) {
-		maillage.sommets[i].x /= maillage.maxCoord;
-		cout << maillage.sommets[i].x << endl;
+		maillage.sommets[i].x /= maillage.maxCoord;		
 		maillage.sommets[i].y /= maillage.maxCoord;
 		maillage.sommets[i].z /= maillage.maxCoord;
 	}
 }
+
+void sauverFichier(string fichierNom) {
+
+	    //déclaration du flux et ouverture du fichier
+		ofstream fichier(fichierNom, ios::out | ios::trunc); 
+
+		if (fichier)  // si l'ouverture a réussi
+		{
+			fichier << "OFF" << endl;
+			fichier << maillage.nbSommets << " " << maillage.nbFacettes << " " << maillage.nbAretes << endl;
+			for (int i = 0; i < maillage.nbSommets; i++) {
+				fichier << maillage.sommets[i].x << " " << maillage.sommets[i].y << " " << maillage.sommets[i].z << " " << endl;
+			}
+			for (int j = 0; j < maillage.nbFacettes; j++) {
+				fichier << maillage.facettes[j][0] << " " << maillage.facettes[j][1] << " " << maillage.facettes[j][2] << " " << maillage.facettes[j][3] << endl;
+			}
+			fichier.close();  // on referme le fichier
+		}
+		else  // sinon
+			cerr << "Erreur à l'ouverture !" << endl;
+}
+
+
+//BEGIN TODO --------------------------------------------------------------------------------------
+//void retirerFacettes() {
+//
+//	random_device rd;     // only used once to initialise (seed) engine
+//	mt19937 rng(rd());    // random-number engine used (Mersenne-Twister in this case)
+//	uniform_int_distribution<int> uni(0, maillage.nbFacettes); // guaranteed unbiased
+//	
+//	for (int i = 0; i < 100; i++) {
+//		auto random_integer = uni(rng);
+//		vector<int> vec = maillage.facettes[random_integer];
+//		for (int j = 0; j < 4; i++) {
+//			maillage.sommets.erase(vec.begin+vec[j]);
+//		}
+//		maillage.facettes.erase(vec.begin + random_integer);
+//	}
+//
+//}
+//END TODO ---------------------------------------------------------------------------------------
 
 int main(int argc, char **argv)
 {
@@ -297,6 +338,10 @@ int main(int argc, char **argv)
 
 	cout << maillage.maxCoord << endl;
 	normalisationDuMaillage();
+
+	//retirerFacettes();
+
+	sauverFichier("test1.off");
 
 	//system("pause");
 
