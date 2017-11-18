@@ -119,8 +119,12 @@
     <ClCompile Include="Loader.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\..\Projet Tp3\Projet Tp3\Projet Tp3\glut32.dll" />
     <None Include="buddha.off" />
     <None Include="test.off" />
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="..\..\Projet Tp3\Projet Tp3\Projet Tp3\glut32.lib" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

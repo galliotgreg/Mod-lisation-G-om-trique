@@ -2,6 +2,7 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include "../../../GL/glut.h"
 
 using namespace std;
 
@@ -10,11 +11,121 @@ struct sMaillage
 	int nbSommets;
 	int nbFacettes;
 	int nbAretes;
+	point3 gravity = point3(0,0,0);
 	vector<point3> sommets;
 	vector<vector<long>> facettes;
 } maillage;
 
 string nbSom, nbFac, nbAre;
+
+#define WIDTH  1080
+#define HEIGHT 1080
+
+#define RED   0
+#define GREEN 0
+#define BLUE  0
+#define ALPHA 1
+#define PI 3.14159
+
+#define KEY_ESC 27
+
+void init_scene();
+void render_scene();
+GLvoid initGL();
+GLvoid window_display();
+GLvoid window_reshape(GLsizei width, GLsizei height);
+GLvoid window_key(unsigned char key, int x, int y);
+GLvoid window_idle();
+int zRotated;
+
+
+// initialisation du fond de la fenêtre graphique : noir opaque
+
+GLvoid initGL()
+{
+	glShadeModel(GL_SMOOTH);
+	glClearColor(RED, GREEN, BLUE, ALPHA);
+	glEnable(GL_DEPTH_TEST);
+}
+
+void init_scene()
+{
+}
+
+// fonction de call-back pour l´affichage dans la fenêtre
+
+GLvoid window_display()
+{
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+
+
+	render_scene();
+
+	// trace la scène grapnique qui vient juste d'être définie
+	glFlush();
+	glutSwapBuffers();
+}
+
+// fonction de call-back pour le redimensionnement de la fenêtre
+
+GLvoid window_reshape(GLsizei width, GLsizei height)
+{
+	glViewport(0, 0, width, height);
+
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glOrtho(-0.2, 0.2, -0.2, 0.2, -0.2, 0.2);
+
+	// toutes les transformations suivantes s´appliquent au modèle de vue 
+	glMatrixMode(GL_MODELVIEW);
+}
+
+// fonction de call-back pour la gestion des événements clavier
+
+GLvoid window_key(unsigned char key, int x, int y)
+{
+	switch (key) {
+	case KEY_ESC:
+		exit(1);
+		break;
+
+	default:
+		printf("La touche %d n´est pas active.\n", key);
+		break;
+	}
+}
+
+GLvoid window_idle()
+{
+	zRotated++;
+	glutPostRedisplay();
+}
+
+
+void render_scene()
+{
+	//c'est ici qu'on dessine
+	glLoadIdentity();
+	glRotatef(zRotated, 0, 1, 0);
+	for (int i = 0; i < maillage.nbFacettes;i++) {
+
+		vector<long> facetteGL = maillage.facettes[i];
+		
+		//cout << facetteGL[1] << facetteGL[2] << facetteGL[3] << endl;
+
+		point3 pointA = maillage.sommets.at(facetteGL.at(1));
+		point3 pointB = maillage.sommets.at(facetteGL.at(2));
+		point3 pointC = maillage.sommets.at(facetteGL.at(3));		
+		
+		glBegin(GL_TRIANGLES);
+			glColor3f(0.75, 0, 0);
+			glVertex3f(pointA.x, pointA.y, pointA.z);
+			glVertex3f(pointB.x, pointB.y, pointB.z);
+			glVertex3f(pointC.x, pointC.y, pointC.z);		
+		glEnd();
+	}	
+}
 
 void initNbSommetFacetteArrete(string ligne) {
 	size_t pos = 0;
@@ -60,6 +171,10 @@ point3 creationPoint(string ligne) {
 		ligne.erase(0, pos + delimiter.length());
 	}
 	point.z = stof(ligne);
+	maillage.gravity.x += point.x;
+	maillage.gravity.y += point.y;
+	maillage.gravity.z += point.z;
+
 	return point;
 }
 
@@ -135,22 +250,58 @@ void stockage(string fichierNom) {
 	fichier.close();
 }
 
+void centrageDuMaillage() {
+	for (int i = 0; i < maillage.nbSommets; i++) {
+		maillage.sommets[i].x -= maillage.gravity.x;
+		maillage.sommets[i].y -= maillage.gravity.y;
+		maillage.sommets[i].z -= maillage.gravity.z;
+	}
+}
 
-int main() {
+int main(int argc, char **argv)
+{
 
 	string fichier = "buddha.off";
 	//string fichier = "test.off";
 
 	ouvertureFichier(fichier);
 
-	cout << "Sommets : " << nbSom << ", Facettes :"<< nbFac << ", Arettte :" << nbAre << endl;
-
 	maillage.nbSommets = stoi(nbSom);
 	maillage.nbFacettes = stoi(nbFac);
 	maillage.nbAretes = stoi(nbAre);
 
 	stockage(fichier);
-	
-	
-	system("pause");
+	maillage.gravity /= maillage.nbSommets;
+	cout << maillage.gravity << endl;
+
+	centrageDuMaillage();
+
+	//system("pause");
+
+	// initialisation  des paramètres de GLUT en fonction
+	// des arguments sur la ligne de commande
+	glutInit(&argc, argv);
+	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
+
+	// définition et création de la fenêtre graphique
+	glutInitWindowSize(WIDTH, HEIGHT);
+	glutInitWindowPosition(0, 0);
+	glutCreateWindow("Primitives graphiques");
+
+	// initialisation de OpenGL et de la scène
+	initGL();
+	init_scene();
+
+	// choix des procédures de callback pour 
+	// le tracé graphique
+	glutDisplayFunc(&window_display);
+	// le redimensionnement de la fenêtre
+	glutReshapeFunc(&window_reshape);
+	// la gestion des événements clavier
+	glutKeyboardFunc(&window_key);
+	glutIdleFunc(&window_idle);
+	// la boucle prinicipale de gestion des événements utilisateur
+	glutMainLoop();
+
+	return 1;
 }
