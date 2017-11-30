@@ -22,8 +22,8 @@
 
 #define ESC 27
 
-float tx=-5.0;
-float ty=-5.0;
+float tx=0.0;
+float ty=0.0;
 
 // Tableau des points de contrôles en global ...
 point3 TabPC[10];
@@ -37,11 +37,13 @@ int Ordre = 10;
 // Point de controle selectionné
 int numPoint = 0;
 
-// Fonction Factorielle
-float fact(int n)
+// Fonction Factorielle fonctionne jusqu'à n=20, ne considère pas les overflow
+int fact(int n)
 {
- // A développer
- return 0;
+	int res = 1;
+	for (int i = 1; i <= n; i++)
+		res *= i;
+	return res;	 
 }
 
 double F1(double u) {
@@ -75,9 +77,36 @@ point3 hermite(point3 P0, point3 P1, point3 V0, point3 V1, double u) {
 
 float Bernstein(int i, int n, float t)
 {
- // A developper
- return 0;
+	int fact_n = fact(n);
+	int fact_i = fact(i);
+	int fact_NMoinsI = fact(n - i);
+	float pow_T_I = pow(t, i);	
+	
+	float pow_final = pow(1 - t, n - i);
+
+ return ((fact_n/(fact_i*fact_NMoinsI))*pow_T_I*pow_final);
 }
+
+// Fonction courbe de bézier
+point3 bezier(float t) {
+	point3 res = point3(0, 0, 0);
+	for (int i = 0; i < 4; i++) {
+		cout << Bernstein(i, 3, t) << endl;
+		res += TabPC[i] * Bernstein(i, 3, t);
+		cout << res << endl;
+	}
+	return res;
+}
+point3 bezier1(float t) {
+	point3 res = point3(0, 0, 0);
+	for (int i = 0; i < 4; i++) {
+		cout << Bernstein(i, 3, t) << endl;
+		res += TabPC[i+3] * Bernstein(i, 3, t);
+		cout << res << endl;
+	}
+	return res;
+}
+
 
 
 /* initialisation d'OpenGL*/
@@ -87,11 +116,17 @@ static void init()
 	
 	// Initialisation des points de contrôles
 	// On choisit de les intialiser selon une ligne
-	for (int i = 0; i < Ordre; i++)
-	{
-     TabPC[i] = point3(i,i,i);
-    }
- 
+	//for (int i = 0; i < Ordre; i++)
+	//{
+     //TabPC[i] = point3(i,i,i);
+    //}
+	TabPC[0] = point3(-2, -2, 0);
+	TabPC[1] = point3(-1, 1, 0);
+	TabPC[2] = point3(1, 1, 0);
+	TabPC[3] = point3(2, 1, 0);	
+	TabPC[4] = point3(3, 1, 0);
+	TabPC[5] = point3(5, 1, 0);
+	TabPC[6] = point3(6, -2, 0);
 }
 
 
@@ -116,37 +151,76 @@ void display(void)
 	point3 V0 = point3(7, -1, 0);
 	point3 V1 = point3(4, -9, 0);
 	
-	TabPC[numPoint]=TabPC[numPoint]+point3(tx,ty,0);
 
+	if (numPoint == 2) {
+		TabPC[numPoint] = TabPC[numPoint] + point3(tx, ty, 0);
+		TabPC[4] = TabPC[4] + point3(-tx, -ty, 0);
+	}
+	else if (numPoint == 4) {
+		TabPC[numPoint] = TabPC[numPoint] + point3(tx, ty, 0);
+		TabPC[2] = TabPC[2] + point3(-tx, -ty, 0);
+	}
+	else if (numPoint == 3) {
+		TabPC[2] = TabPC[2] + point3(tx, ty, 0);
+		TabPC[numPoint] = TabPC[numPoint] + point3(tx, ty, 0);
+		TabPC[4] = TabPC[4] + point3(tx, ty, 0);
+	}
+	else {
+		TabPC[numPoint] = TabPC[numPoint] + point3(tx, ty, 0);
+	}
+	
 	//// Enveloppe des points de controles
-	//glColor3f (1.0, 0.0, 0.0);
-	//glBegin(GL_LINE_STRIP);
- //       for (int i =0; i < Ordre; i++)
- //       {
-	//	 glVertex3f(TabPC[i].x, TabPC[i].y, TabPC[i].z);
- //       }
- //   glEnd();
+	glColor3f (1.0, 0.0, 0.0);
+	glBegin(GL_LINE_STRIP);
+        for (int i =0; i <= 6; i++)
+        {
+		 glVertex3f(TabPC[i].x, TabPC[i].y, TabPC[i].z);
+        }
+    glEnd();
 
-	double u = 0.0;
+	
 
 	glColor3f(1.0, 0.0, 0.0);
-	glBegin(GL_POINTS);
-		glVertex3f(P0.x, P0.y, P0.z);
-		glVertex3f(P1.x, P1.y, P1.z);
-		glVertex3f(V0.x, V0.y, V0.z);
-		glVertex3f(V1.x, V1.y, V1.z);
-	glEnd();
+	//glBegin(GL_POINTS);
+	//	glVertex3f(P0.x, P0.y, P0.z);
+	//	glVertex3f(P1.x, P1.y, P1.z);
+	//	glVertex3f(V0.x, V0.y, V0.z);
+	//	glVertex3f(V1.x, V1.y, V1.z);
+	//glEnd();
 
 	glColor3f(0.0, 1.0, 0.0);
+	/*Hermite*/
+	//double u = 0.0;
+	//glBegin(GL_LINE_STRIP);
+	//	for (int i = 0; i < Ordre; i++) 
+	//	{
+	//		point3 temp = hermite(P0, P1, V0, V1, u);
+	//		glVertex3f(temp.x, temp.y, temp.z);
+	//		u += 0.1;
+	//	}
+	//	glEnd();
+
+	/*Bézier*/
+	float u = 0.0;
 	glBegin(GL_LINE_STRIP);
-		for (int i = 0; i < Ordre; i++) 
+		for (int i = 0; i <= Ordre; i++) 
 		{
-			point3 temp = hermite(P0, P1, V0, V1, u);
+			point3 temp = bezier(u);
 			glVertex3f(temp.x, temp.y, temp.z);
 			u += 0.1;
 		}
 		glEnd();
 
+	u = 0.0;
+	glColor3f(0.0, 0.0, 1.0);
+	glBegin(GL_LINE_STRIP);
+	for (int i = 0; i <= Ordre; i++)
+	{
+		point3 temp = bezier1(u);
+		glVertex3f(temp.x, temp.y, temp.z);
+		u += 0.1;
+	}
+	glEnd();
 
 	
 

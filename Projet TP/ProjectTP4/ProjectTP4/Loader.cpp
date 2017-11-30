@@ -12,10 +12,11 @@ struct sMaillage
 	int nbSommets;
 	int nbFacettes;
 	int nbAretes;
-	float maxCoord = 0.0;
+	point3 maxCoord = point3(0,0,0);
 	point3 gravity = point3(0,0,0);
 	vector<point3> sommets;
-	vector<vector<int>> facettes;
+	vector<int> randomEraseFace;
+	vector<vector<int>> facettes;	
 } maillage;
 
 string nbSom, nbFac, nbAre;
@@ -162,14 +163,14 @@ point3 creationPoint(string ligne) {
 		token = ligne.substr(0, pos);
 		if (i == 1) {
 			point.x = stof(token);
-			if(maillage.maxCoord < abs(point.x) ) {
-				maillage.maxCoord = abs(point.x);
+			if(maillage.maxCoord.x < abs(point.x) ) {
+				maillage.maxCoord.x = abs(point.x);
 			}
 		}
 		else if (i == 2) {
 			point.y = stof(token);
-			if (maillage.maxCoord < abs(point.y)) {
-				maillage.maxCoord = abs(point.y);
+			if (maillage.maxCoord.y < abs(point.y)) {
+				maillage.maxCoord.y = abs(point.y);
 			}
 		}
 		else {
@@ -179,8 +180,8 @@ point3 creationPoint(string ligne) {
 		ligne.erase(0, pos + delimiter.length());
 	}
 	point.z = stof(ligne);
-	if (maillage.maxCoord < abs(point.z)) {
-		maillage.maxCoord = abs(point.z);		
+	if (maillage.maxCoord.z < abs(point.z)) {
+		maillage.maxCoord.z = abs(point.z);		
 	}
 	maillage.gravity.x += point.x;
 	maillage.gravity.y += point.y;
@@ -270,10 +271,32 @@ void centrageDuMaillage() {
 }
 
 void normalisationDuMaillage() {
+
+	float maxCoor = 0.0f;
+
+	if (maillage.maxCoord.x > maillage.maxCoord.y) {
+		if (maillage.maxCoord.x > maillage.maxCoord.z) {
+			maxCoor = maillage.maxCoord.x;
+		}
+		else {
+			maxCoor = maillage.maxCoord.z;
+		}
+	}
+	else {
+		if (maillage.maxCoord.y > maillage.maxCoord.z) {
+			maxCoor = maillage.maxCoord.y;
+		}
+		else {
+			if (maillage.maxCoord.y > maillage.maxCoord.z) {
+				maxCoor = maillage.maxCoord.z;
+			}
+		}
+	}
+
 	for (int i = 0; i < maillage.nbSommets; i++) {
-		maillage.sommets[i].x /= maillage.maxCoord;		
-		maillage.sommets[i].y /= maillage.maxCoord;
-		maillage.sommets[i].z /= maillage.maxCoord;
+		maillage.sommets[i].x /= maxCoor;
+		maillage.sommets[i].y /= maxCoor;
+		maillage.sommets[i].z /= maxCoor;
 	}
 }
 
@@ -289,8 +312,15 @@ void sauverFichier(string fichierNom) {
 			for (int i = 0; i < maillage.nbSommets; i++) {
 				fichier << maillage.sommets[i].x << " " << maillage.sommets[i].y << " " << maillage.sommets[i].z << " " << endl;
 			}
-			for (int j = 0; j < maillage.nbFacettes; j++) {
-				fichier << maillage.facettes[j][0] << " " << maillage.facettes[j][1] << " " << maillage.facettes[j][2] << " " << maillage.facettes[j][3] << endl;
+			for (int j = 0; j < maillage.nbFacettes + maillage.randomEraseFace.size(); j++) {								
+
+				if (std::find(maillage.randomEraseFace.begin(), maillage.randomEraseFace.end(), j) != maillage.randomEraseFace.end()) {
+					/* v contains x */
+				}
+				else {
+					fichier << maillage.facettes[j][0] << " " << maillage.facettes[j][1] << " " << maillage.facettes[j][2] << " " << maillage.facettes[j][3] << endl;
+				}
+				//fichier << maillage.facettes[j][0] << " " << maillage.facettes[j][1] << " " << maillage.facettes[j][2] << " " << maillage.facettes[j][3] << endl;
 			}
 			fichier.close();  // on referme le fichier
 		}
@@ -300,22 +330,20 @@ void sauverFichier(string fichierNom) {
 
 
 //BEGIN TODO --------------------------------------------------------------------------------------
-//void retirerFacettes() {
-//
-//	random_device rd;     // only used once to initialise (seed) engine
-//	mt19937 rng(rd());    // random-number engine used (Mersenne-Twister in this case)
-//	uniform_int_distribution<int> uni(0, maillage.nbFacettes); // guaranteed unbiased
-//	
-//	for (int i = 0; i < 100; i++) {
-//		auto random_integer = uni(rng);
-//		vector<int> vec = maillage.facettes[random_integer];
-//		for (int j = 0; j < 4; i++) {
-//			maillage.sommets.erase(vec.begin+vec[j]);
-//		}
-//		maillage.facettes.erase(vec.begin + random_integer);
-//	}
-//
-//}
+void retirerFacettes() {
+
+	random_device rd;     // only used once to initialise (seed) engine
+	mt19937 rng(rd());    // random-number engine used (Mersenne-Twister in this case)
+	uniform_int_distribution<int> uni(0, maillage.nbFacettes); // guaranteed unbiased
+	
+	for (int i = 0; i < 500; i++) {
+		auto random_integer = uni(rng);
+
+		maillage.randomEraseFace.push_back(random_integer);
+	}
+
+	maillage.nbFacettes -= maillage.randomEraseFace.size();
+}
 //END TODO ---------------------------------------------------------------------------------------
 
 int main(int argc, char **argv)
@@ -339,7 +367,7 @@ int main(int argc, char **argv)
 	cout << maillage.maxCoord << endl;
 	normalisationDuMaillage();
 
-	//retirerFacettes();
+	retirerFacettes();
 
 	sauverFichier("test1.off");
 
