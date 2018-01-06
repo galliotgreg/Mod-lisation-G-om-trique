@@ -230,6 +230,21 @@ void display(void)
 	}
 	glEnd();
 
+	/*Surface reglee*/
+	u = 0.0;	
+	for (int i = 0; i <= Ordre; i++)
+	{
+		point3 temp1 = bezier(u);
+		point3 temp2 = bezier1(u);
+		glColor3f(0.0, 0.5, 0.5);
+		glBegin(GL_LINE_STRIP);
+			glVertex3f(temp1.x, temp1.y, temp1.z);
+			glVertex3f(temp2.x, temp2.y, temp2.z);
+		glEnd();
+		u += 0.1;
+	}
+	
+
 	
 
 	// Affichage du point de controle courant
