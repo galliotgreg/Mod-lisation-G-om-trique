@@ -232,15 +232,33 @@ void display(void)
 
 	/*Surface reglee*/
 	u = 0.0;	
-	for (int i = 0; i <= Ordre; i++)
-	{
-		point3 temp1 = bezier(u);
-		point3 temp2 = bezier1(u);
+	point3 temp1;
+	point3 temp2;
+	point3 temp3;
+	for (int i = 0; i < Ordre; i++)
+	{					
+		temp1 = bezier(u);
+		temp2 = bezier1(u);
+		temp3 = bezier1(u+0.1);					
+			
 		glColor3f(0.0, 0.5, 0.5);
-		glBegin(GL_LINE_STRIP);
+		glBegin(GL_TRIANGLES);
 			glVertex3f(temp1.x, temp1.y, temp1.z);
 			glVertex3f(temp2.x, temp2.y, temp2.z);
+			glVertex3f(temp3.x, temp3.y, temp3.z);
 		glEnd();
+
+		temp1 = bezier(u);
+		temp2 = bezier(u + 0.1);
+		temp3 = bezier1(u + 0.1);
+		
+		glColor3f(0.5, 0.5, 0.0);
+		glBegin(GL_TRIANGLES);
+			glVertex3f(temp1.x, temp1.y, temp1.z);
+			glVertex3f(temp2.x, temp2.y, temp2.z);
+			glVertex3f(temp3.x, temp3.y, temp3.z);
+		glEnd();
+
 		u += 0.1;
 	}
 	
