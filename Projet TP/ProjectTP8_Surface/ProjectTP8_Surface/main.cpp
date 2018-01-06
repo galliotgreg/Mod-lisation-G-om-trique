@@ -91,22 +91,25 @@ float Bernstein(int i, int n, float t)
 point3 bezier(float t) {
 	point3 res = point3(0, 0, 0);
 	for (int i = 0; i < 4; i++) {
-		cout << Bernstein(i, 3, t) << endl;
 		res += TabPC[i] * Bernstein(i, 3, t);
-		cout << res << endl;
 	}
 	return res;
 }
 point3 bezier1(float t) {
 	point3 res = point3(0, 0, 0);
 	for (int i = 0; i < 4; i++) {
-		cout << Bernstein(i, 3, t) << endl;
 		res += TabPC[i+4] * Bernstein(i, 3, t);
-		cout << res << endl;
 	}
 	return res;
 }
 
+point3 produitVect(point3 u, point3 v) {
+	point3 res = point3(u.y*v.z - u.z*v.y, u.z*v.x - u.x*v.z, u.x*v.y - u.y*v.x);
+	cout << "*********************************************" << endl;
+	cout << res.x << " " << res.y << " " << res.z << endl;
+	cout << "*********************************************" << endl;
+	return res;
+}
 
 
 /* initialisation d'OpenGL*/
@@ -120,6 +123,8 @@ static void init()
 	//{
      //TabPC[i] = point3(i,i,i);
     //}
+	/*
+	// Tableau pour la surface réglé
 	TabPC[0] = point3(-2, -2, 0);
 	TabPC[1] = point3(-1, 1, 0);
 	TabPC[2] = point3(1, 1, 0);
@@ -127,7 +132,17 @@ static void init()
 	TabPC[4] = point3(-4, -4, 0);
 	TabPC[5] = point3(-3, 3, 0);
 	TabPC[6] = point3(3, 3, 0);
-	TabPC[7] = point3(4,3,0);
+	TabPC[7] = point3(4,3,0);*/
+
+	//Tableau pour la carreau paramètrique
+	TabPC[0] = point3(0, 0, 0);
+	TabPC[1] = point3(1, 6, 0);
+	TabPC[2] = point3(2, 3, 0);
+	TabPC[3] = point3(3, 7, 0);
+	TabPC[4] = point3(0, 0, 0);
+	TabPC[5] = point3(3, 3, 0);
+	TabPC[6] = point3(5, 3, 0);
+	TabPC[7] = point3(7, 3, 0);
 }
 
 
@@ -172,6 +187,8 @@ void display(void)
 	
 	//// Enveloppe des points de controles
 	glColor3f (1.0, 0.0, 0.0);
+	
+	/*
 	glBegin(GL_LINE_STRIP);
         for (int i =0; i <= 3; i++)
         {
@@ -181,6 +198,14 @@ void display(void)
 
 	glBegin(GL_LINE_STRIP);
 	for (int i = 4; i <= 7; i++)
+	{
+		glVertex3f(TabPC[i].x, TabPC[i].y, TabPC[i].z);
+	}
+	glEnd();*/
+
+	//Enveloppe Pour Surface Paramètrque
+	glBegin(GL_LINE_STRIP);
+	for (int i = 0; i <= 7; i++)
 	{
 		glVertex3f(TabPC[i].x, TabPC[i].y, TabPC[i].z);
 	}
@@ -229,8 +254,9 @@ void display(void)
 		u += 0.1;
 	}
 	glEnd();
-
+	
 	/*Surface reglee*/
+	/*
 	u = 0.0;	
 	point3 temp1;
 	point3 temp2;
@@ -259,6 +285,35 @@ void display(void)
 			glVertex3f(temp3.x, temp3.y, temp3.z);
 		glEnd();
 
+		u += 0.1;
+	}*/
+	
+	//Carreau parametrique
+	u = 0.1;
+	for (int i = 0; i < Ordre; i++) {
+		point3 bezier1U = bezier(u);
+		double v = 0.0;
+		glColor3f(0.0, 0.0, 1.0);
+		glBegin(GL_LINE_STRIP);
+		for (int j = 0; j <= Ordre; j++)
+		{
+			point3 temp = bezier1(v);
+			glVertex3f(temp.x + bezier1U.x, temp.y + bezier1U.y, temp.z + bezier1U.z);
+			v += 0.1;
+		}
+		glEnd();		
+
+		point3 bezierU = bezier1(u);
+		v = 0.0;
+		glColor3f(0.5, 0.5, 0.0);
+		glBegin(GL_LINE_STRIP);
+		for (int j = 0; j <= Ordre; j++)
+		{
+			point3 temp = bezier(v);
+			glVertex3f(temp.x + bezierU.x, temp.y + bezierU.y, temp.z + bezierU.z);
+			v += 0.1;
+		}
+		glEnd();
 		u += 0.1;
 	}
 	
