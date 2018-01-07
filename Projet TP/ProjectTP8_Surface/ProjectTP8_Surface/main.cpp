@@ -22,6 +22,11 @@
 
 #define ESC 27
 
+#define RED   0
+#define GREEN 0
+#define BLUE  0
+#define ALPHA 1
+
 float tx=0.0;
 float ty=0.0;
 
@@ -29,7 +34,7 @@ float ty=0.0;
 point3 TabPC[10];
 // Ordre de la courbre  : Ordre
 // Degré de la courbe = Ordre - 1
-int Ordre = 10;
+int const Ordre = 10;
 
 
 
@@ -111,12 +116,19 @@ point3 produitVect(point3 u, point3 v) {
 	return res;
 }
 
+GLvoid initGL()
+{
+	glShadeModel(GL_SMOOTH);
+	glClearColor(RED, GREEN, BLUE, ALPHA);
+	glEnable(GL_DEPTH_TEST);
+}
 
 /* initialisation d'OpenGL*/
 static void init()
 {
-	glClearColor(0.0, 0.0, 0.0, 0.0);
-	
+	glClearColor(0.0, 0.0, 0.0, 0.0);		
+	glEnable(GL_DEPTH_TEST);
+
 	// Initialisation des points de contrôles
 	// On choisit de les intialiser selon une ligne
 	//for (int i = 0; i < Ordre; i++)
@@ -142,14 +154,14 @@ static void init()
 	TabPC[4] = point3(0, 0, 0);
 	TabPC[5] = point3(3, 3, 0);
 	TabPC[6] = point3(5, 3, 0);
-	TabPC[7] = point3(7, 3, 0);
+	TabPC[7] = point3(7, 3, 0);	
 }
 
 
 /* Dessin */
 void display(void)
 {
-	glClear(GL_COLOR_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 	
    
 	glMatrixMode(GL_MODELVIEW);
@@ -345,14 +357,67 @@ void display(void)
 	
 	//Surface balayée
 	u = 0.0;
+	point3 pointes[Ordre+1];
+	point3 baseDroite[Ordre+1];
+	point3 baseGauche[Ordre+1];
+
 	for (int i = 0; i <= Ordre; i++) {
 		point3 bezierU = bezier(u);
-		glBegin(GL_TRIANGLES);
+
+		pointes[i] = point3(TabPC[0].x + bezierU.x, TabPC[0].y + bezierU.y, TabPC[0].z);
+		baseDroite[i] = point3(TabPC[0].x + 2 + bezierU.x, TabPC[0].y + 2 + bezierU.y, TabPC[0].z);
+		baseGauche[i] = point3(TabPC[0].x - 2 + bezierU.x, TabPC[0].y + 2 + bezierU.y, TabPC[0].z);
+		
+		/*glBegin(GL_POINT);
 			glVertex3f(TabPC[0].x + bezierU.x, TabPC[0].y + bezierU.y, TabPC[0].z);
 			glVertex3f(TabPC[0].x + 2 + bezierU.x, TabPC[0].y + 2 + bezierU.y, TabPC[0].z );
 			glVertex3f(TabPC[0].x - 2 + bezierU.x, TabPC[0].y + 2 + bezierU.y, TabPC[0].z);
-		glEnd();		
+		glEnd();*/
 		u += 0.1;
+	}
+
+	for (int i = 0; i < Ordre; i++) {
+		//Draw triangle base
+		glColor3f(0.25, 0.0, 0.5);
+		glBegin(GL_TRIANGLES);
+			glVertex3f(baseDroite[i].x , baseDroite[i].y, baseDroite[i].z);
+			glVertex3f(baseDroite[i+1].x, baseDroite[i+1].y, baseDroite[i+1].z);
+			glVertex3f(baseGauche[i].x, baseGauche[i].y, baseGauche[i].z);
+		glEnd();
+
+		glBegin(GL_TRIANGLES);
+			glVertex3f(baseDroite[i + 1].x, baseDroite[i + 1].y, baseDroite[i + 1].z);
+			glVertex3f(baseGauche[i + 1].x, baseGauche[i + 1].y, baseGauche[i + 1].z);
+			glVertex3f(baseGauche[i].x, baseGauche[i].y, baseGauche[i].z);
+		glEnd();
+
+		//Draw right face
+		glColor3f(0.5, 0.0, 0.25);
+		glBegin(GL_TRIANGLES);
+			glVertex3f(baseDroite[i].x, baseDroite[i].y, baseDroite[i].z);
+			glVertex3f(baseDroite[i + 1].x, baseDroite[i + 1].y, baseDroite[i + 1].z);
+			glVertex3f(pointes[i].x, pointes[i].y, pointes[i].z);
+		glEnd();
+
+		glBegin(GL_TRIANGLES);
+			glVertex3f(baseDroite[i + 1].x, baseDroite[i + 1].y, baseDroite[i + 1].z);
+			glVertex3f(pointes[i + 1].x, pointes[i + 1].y, pointes[i + 1].z);
+			glVertex3f(pointes[i].x, pointes[i].y, pointes[i].z);
+		glEnd();
+
+		//Draw left face
+		glColor3f(0.0, 0.25, 0.25);
+		glBegin(GL_TRIANGLES);
+			glVertex3f(baseGauche[i].x, baseGauche[i].y, baseGauche[i].z);
+			glVertex3f(baseGauche[i + 1].x, baseGauche[i + 1].y, baseGauche[i + 1].z);
+			glVertex3f(pointes[i].x, pointes[i].y, pointes[i].z);
+		glEnd();
+
+		glBegin(GL_TRIANGLES);
+			glVertex3f(baseGauche[i + 1].x, baseGauche[i + 1].y, baseGauche[i + 1].z);
+			glVertex3f(pointes[i + 1].x, pointes[i + 1].y, pointes[i + 1].z);
+			glVertex3f(pointes[i].x, pointes[i].y, pointes[i].z);
+		glEnd();
 	}
 
 	// Affichage du point de controle courant
@@ -435,11 +500,11 @@ int main(int argc, char **argv)
 {
    glutInitWindowSize(400, 400);
    glutInit(&argc, argv);
-   glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
+   glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);   
    glutCreateWindow("Courbe de Bézier");
    init();
    glutReshapeFunc(reshape);
-   glutKeyboardFunc(keyboard);
+   glutKeyboardFunc(keyboard);   
    glutDisplayFunc(display);
    glutMainLoop();
    return 0;
