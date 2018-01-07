@@ -205,7 +205,7 @@ void display(void)
 
 	//Enveloppe Pour Surface Paramètrque
 	glBegin(GL_LINE_STRIP);
-	for (int i = 0; i <= 7; i++)
+	for (int i = 0; i <= 3; i++)
 	{
 		glVertex3f(TabPC[i].x, TabPC[i].y, TabPC[i].z);
 	}
@@ -243,7 +243,7 @@ void display(void)
 			u += 0.1;
 		}
 		glEnd();
-
+	/*
 	u = 0.0;
 	glColor3f(0.0, 0.0, 1.0);
 	glBegin(GL_LINE_STRIP);
@@ -253,7 +253,7 @@ void display(void)
 		glVertex3f(temp.x, temp.y, temp.z);
 		u += 0.1;
 	}
-	glEnd();
+	glEnd();*/
 	
 	/*Surface reglee*/
 	/*
@@ -288,37 +288,72 @@ void display(void)
 		u += 0.1;
 	}*/
 	
-	//Carreau parametrique
-	u = 0.1;
+	//Carreau parametrique	
+	/*
+		u = 0.1;
 	for (int i = 0; i < Ordre; i++) {
-		point3 bezier1U = bezier(u);
+		point3 bezierU = bezier(u);
 		double v = 0.0;
 		glColor3f(0.0, 0.0, 1.0);
 		glBegin(GL_LINE_STRIP);
 		for (int j = 0; j <= Ordre; j++)
 		{
 			point3 temp = bezier1(v);
-			glVertex3f(temp.x + bezier1U.x, temp.y + bezier1U.y, temp.z + bezier1U.z);
+			glVertex3f(temp.x + bezierU.x, temp.y + bezierU.y, temp.z + bezierU.z);
 			v += 0.1;
 		}
 		glEnd();		
 
-		point3 bezierU = bezier1(u);
+		point3 bezier1U = bezier1(u);
 		v = 0.0;
 		glColor3f(0.5, 0.5, 0.0);
 		glBegin(GL_LINE_STRIP);
 		for (int j = 0; j <= Ordre; j++)
 		{
 			point3 temp = bezier(v);
-			glVertex3f(temp.x + bezierU.x, temp.y + bezierU.y, temp.z + bezierU.z);
+			glVertex3f(temp.x + bezier1U.x, temp.y + bezier1U.y, temp.z + bezier1U.z);
 			v += 0.1;
 		}
 		glEnd();
 		u += 0.1;
 	}
-	
+	*/
 
+	// Carreau paramétrique avec triangles	
+	/*for (double u = 0.0; u < 1; u += 0.1) {
+		for (double v = 0.0; v < 1; v += 0.1) {
+			point3 bezierU = bezier(u);
+			point3 bezierU_plus1 = bezier(u + 0.1);
+			point3 bezier1U = bezier1(v);
+			point3 bezier1U_plus1 = bezier1(v + 0.1);
+			
+			glColor3f(0.5, 0.0, 0.5);
+			glBegin(GL_TRIANGLES);
+			glVertex3f(bezierU.x, bezierU.y, bezierU.z);
+			glVertex3f(bezierU_plus1.x, bezierU_plus1.y, bezierU_plus1.z);
+			glVertex3f(bezier1U.x, bezier1U.y, bezier1U.z);
+			glEnd;
+
+			glColor3f(0.5, 0.5, 0.0);
+			glBegin(GL_TRIANGLES);
+			glVertex3f(bezier1U.x, bezier1U.y, bezier1U.z);
+			glVertex3f(bezierU_plus1.x, bezierU_plus1.y, bezierU_plus1.z);
+			glVertex3f(bezier1U.x + bezierU_plus1.x, bezier1U.y + bezierU_plus1.y, bezier1U.z + bezierU_plus1.z);
+			glEnd;
+		}				
+	}*/
 	
+	//Surface balayée
+	u = 0.0;
+	for (int i = 0; i <= Ordre; i++) {
+		point3 bezierU = bezier(u);
+		glBegin(GL_TRIANGLES);
+			glVertex3f(TabPC[0].x + bezierU.x, TabPC[0].y + bezierU.y, TabPC[0].z);
+			glVertex3f(TabPC[0].x + 2 + bezierU.x, TabPC[0].y + 2 + bezierU.y, TabPC[0].z );
+			glVertex3f(TabPC[0].x - 2 + bezierU.x, TabPC[0].y + 2 + bezierU.y, TabPC[0].z);
+		glEnd();		
+		u += 0.1;
+	}
 
 	// Affichage du point de controle courant
 	// On se déplace ensuite avec + et - 
