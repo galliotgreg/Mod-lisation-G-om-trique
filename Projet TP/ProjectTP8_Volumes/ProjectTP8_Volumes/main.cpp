@@ -48,8 +48,10 @@ bool pointAppartientSphere(point3 p, point3 centreSphere, int rayon) {
 
 void render_scene()
 {
-	point3 centreSphere = point3(0.0, 0.0, 0.0);
-	int rayon = 150;
+	point3 centreSphere1 = point3(-5.0, 0.0, 0.0);
+	int rayon1 = 100;
+	point3 centreSphere2 = point3(5.0, 0.0, 0.0);
+	int rayon2 = 100;
 
 	//c'est ici qu'on dessine
 
@@ -62,6 +64,7 @@ void render_scene()
 	point3 G = point3(1, 1, 0);
 	point3 H = point3(1, 1, 1);
 
+	/*
 	glColor3f(0.0, 0.5, 0.5);
 	glBegin(GL_TRIANGLES);
 	glVertex3f(A.x, A.y, A.z);
@@ -139,7 +142,7 @@ void render_scene()
 	glVertex3f(E.x, E.y, E.z);
 	glVertex3f(F.x, F.y, F.z);
 	glEnd();
-
+	*/
 
 	//Left
 	//ABCD
@@ -177,7 +180,8 @@ void render_scene()
 	TabDown[2] = F;
 	TabDown[3] = E;
 	TabDown[4] = A;
-
+	
+	/*
 	glBegin(GL_LINE_STRIP);
 	for (point3 point : TabLeft) {
 		//ABCD
@@ -201,14 +205,46 @@ void render_scene()
 		//ABEF
 		glVertex3f(point.x, point.y, point.z);
 	}
-	glEnd();
+	glEnd();*/
 
 	//Draw the grid	
 	glColor3f(0.25, 0.25, 0.25);
-	for (int i = -100; i < 100; i++) {
-		for (int j = -100; j < 100; j++) {
-			for (int k = -100; k < 100; k++) {
-				if (pointAppartientSphere(point3(i, j, k), centreSphere, rayon)) {
+	for (int i = -50; i < 50; i++) {
+		for (int j = -50; j < 50; j++) {
+			for (int k = -50; k < 50; k++) {
+				//Union
+				if (pointAppartientSphere(point3(i, j, k), centreSphere1, rayon1) && pointAppartientSphere(point3(i, j, k), centreSphere2, rayon2)) {
+					glColor3f(1.0, 0.0, 0.0);
+					glBegin(GL_LINE_STRIP);
+					for (point3 point : TabLeft) {
+						//ABCD
+						glVertex3f(i + point.x, j + point.y, k + point.z);
+					}
+					glEnd();
+					glColor3f(0.75, 0.25, 0.0);
+					glBegin(GL_LINE_STRIP);
+					for (point3 point : TabRight) {
+						//EFGH
+						glVertex3f(i + point.x, j + point.y, k + point.z);
+					}
+					glEnd();
+					glColor3f(0.75, 0.0, 0.25);
+					glBegin(GL_LINE_STRIP);
+					for (point3 point : TabTop) {
+						//CDGH
+						glVertex3f(i + point.x, j + point.y, k + point.z);
+					}
+					glEnd();
+					glColor3f(0.75, 0.10, 0.15);
+					glBegin(GL_LINE_STRIP);
+					for (point3 point : TabDown) {
+						//ABEF
+						glVertex3f(i + point.x, j + point.y, k + point.z);
+					}
+					glEnd();
+					continue;
+				}
+				if (pointAppartientSphere(point3(i, j, k), centreSphere1, rayon1) || pointAppartientSphere(point3(i, j, k), centreSphere2, rayon2)) {
 					glColor3f(0.25, 0.25, 0.0);
 					glBegin(GL_LINE_STRIP);
 					for (point3 point : TabLeft) {
@@ -237,7 +273,7 @@ void render_scene()
 						glVertex3f(i + point.x, j + point.y, k + point.z);
 					}
 					glEnd();
-				}
+				}				
 			}
 		}
 	}
@@ -291,7 +327,7 @@ void reshape(int w, int h)
 	glViewport(0, 0, (GLsizei)w, (GLsizei)h);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glOrtho(-20, 20, -20, 20, -10, 10);
+	glOrtho(-50, 50, -50, 50, -50, 50);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 }
