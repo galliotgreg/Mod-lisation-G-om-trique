@@ -65,14 +65,18 @@ float distanceEntre2Points(point3 p1, point3 p2) {
 	return sqrt((p2.x - p1.x)*(p2.x - p1.x) + (p2.y - p1.y)*(p2.y - p1.y) + (p2.z - p1.z)*(p2.z - p1.z));
 }
 
-float potentiel(point3 p, point3 TabSphere[]) {	
+float potentiel( point3 p, point3 TabSphere[]) {	
 
 	float res = 0.0;
-	
-	for (int i = 0; i < 4; i++) {
+	int signe;
 
+	for (int i = 0; i < 4; i++) {
+		if (i == 3)
+			signe = -2;
+		else
+			signe = 1;
 		float distance = distanceEntre2Points(p, TabSphere[i]);		
-		res += (a * exp(-b *(distance)));
+		res += signe * (a * exp(-b *(distance)));
 		//cout << res << endl;
 	}
 	return res;
@@ -90,7 +94,7 @@ void render_scene()
 	int rayon2 = 200;
 	point3 centreSphere3 = point3(0.0, -30, 0.0);
 	int rayon3 = 200;
-	point3 centreSphere4 = point3(0.0, 20.0, 0.0);
+	point3 centreSphere4 = point3(30.0, 0.0, 0.0);
 	int rayon4 = 200;
 
 	TabSpheres[0] = centreSphere1;
@@ -240,8 +244,8 @@ void render_scene()
 						potMin = potentiel(point3(i, j, k), TabSpheres);
 					if (potentiel(point3(i, j, k), TabSpheres) > potMax)
 						potMax = potentiel(point3(i, j, k), TabSpheres);
-
-					if (potentiel(point3(i,j,k), TabSpheres) > 0.027 ){
+					
+					if (potentiel(point3(i,j,k), TabSpheres) > 0.027){
 						glColor3f(0.25, 0.25, 0.0);
 						glBegin(GL_LINE_STRIP);
 						for (point3 point : TabLeft) {
