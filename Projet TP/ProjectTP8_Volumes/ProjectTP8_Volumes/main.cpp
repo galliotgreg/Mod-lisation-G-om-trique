@@ -33,6 +33,10 @@ float tx = 0.0;
 float ty = 0.0;
 float tz = 0.0;
 
+//Coefficient surfaces implicites
+float a = 1.0;
+float b = 0.17;
+
 /* initialisation d'OpenGL*/
 static void init()
 {
@@ -57,19 +61,36 @@ bool intersectionSphere(point3 p,point3 TabSphere[], int TabRayons[]) {
 	return false;
 }
 
+float distanceEntre2Points(point3 p1, point3 p2) {	
+	return sqrt((p2.x - p1.x)*(p2.x - p1.x) + (p2.y - p1.y)*(p2.y - p1.y) + (p2.z - p1.z)*(p2.z - p1.z));
+}
+
+float potentiel(point3 p, point3 TabSphere[]) {	
+
+	float res = 0.0;
+	
+	for (int i = 0; i < 4; i++) {
+
+		float distance = distanceEntre2Points(p, TabSphere[i]);		
+		res += (a * exp(-b *(distance)));
+		//cout << res << endl;
+	}
+	return res;
+}
+
 void render_scene()
 {
 	
 	point3 TabSpheres[4];
 	int TabRayons[4];
 	
-	point3 centreSphere1 = point3(-15.0, 0.0, 0.0);
+	point3 centreSphere1 = point3(-50.0, 0.0, 0.0);
 	int rayon1 = 200;	
-	point3 centreSphere2 = point3(15.0, 0.0, 0.0);
+	point3 centreSphere2 = point3(40.0, 0.0, 0.0);
 	int rayon2 = 200;
-	point3 centreSphere3 = point3(0.0, -15.0, 0.0);
+	point3 centreSphere3 = point3(0.0, -30, 0.0);
 	int rayon3 = 200;
-	point3 centreSphere4 = point3(0.0, 15.0, 0.0);
+	point3 centreSphere4 = point3(0.0, 20.0, 0.0);
 	int rayon4 = 200;
 
 	TabSpheres[0] = centreSphere1;
@@ -93,7 +114,174 @@ void render_scene()
 	point3 G = point3(1, 1, 0);
 	point3 H = point3(1, 1, 1);
 
+	//Left
+	//ABCD
+	point3 TabLeft[5];
+	TabLeft[0] = A;
+	TabLeft[1] = B;
+	TabLeft[2] = D;
+	TabLeft[3] = C;
+	TabLeft[4] = A;
+
+	//Right
+	//EFGH
+	point3 TabRight[5];
+	TabRight[0] = E;
+	TabRight[1] = F;
+	TabRight[2] = H;
+	TabRight[3] = G;
+	TabRight[4] = E;
+
+
+	//Top
+	//CDGH
+	point3 TabTop[5];
+	TabTop[0] = C;
+	TabTop[1] = D;
+	TabTop[2] = H;
+	TabTop[3] = G;
+	TabTop[4] = C;
+
+	//Down
+	//ABEF
+	point3 TabDown[5];
+	TabDown[0] = A;
+	TabDown[1] = B;
+	TabDown[2] = F;
+	TabDown[3] = E;
+	TabDown[4] = A;
+
+	//Draw the grid	
 	/*
+	glColor3f(0.25, 0.25, 0.25);
+	for (int i = -50; i < 50; i++) {
+		for (int j = -50; j < 50; j++) {
+			for (int k = -50; k < 50; k++) {
+				for (int m = 0; m < 4; m++) {
+					if (intersectionSphere(point3(i, j, k), TabSpheres, TabRayons)) {
+						glColor3f(1.0, 0.0, 0.0);
+						glBegin(GL_LINE_STRIP);
+						for (point3 point : TabLeft) {
+							//ABCD
+							glVertex3f(i + point.x, j + point.y, k + point.z);
+						}
+						glEnd();
+						glColor3f(0.75, 0.25, 0.0);
+						glBegin(GL_LINE_STRIP);						
+						for (point3 point : TabRight) {
+							//EFGH
+							glVertex3f(i + point.x, j + point.y, k + point.z);
+						}
+						glEnd();
+						glColor3f(0.75, 0.0, 0.25);
+						glBegin(GL_LINE_STRIP);
+						for (point3 point : TabTop) {
+							//CDGH
+							glVertex3f(i + point.x, j + point.y, k + point.z);
+						}
+						glEnd();
+						glColor3f(0.75, 0.15, 0.10);
+						glBegin(GL_LINE_STRIP);
+						for (point3 point : TabDown) {
+							//ABEF
+							glVertex3f(i + point.x, j + point.y, k + point.z);
+						}
+						glEnd();
+						continue;
+					}
+
+					if (pointAppartientSphere(point3(i, j, k), TabSpheres[m], TabRayons[m])) {
+						glColor3f(0.25, 0.25, 0.0);
+						glBegin(GL_LINE_STRIP);
+						for (point3 point : TabLeft) {
+							//ABCD
+							glVertex3f(i + point.x, j + point.y, k + point.z);
+						}
+						glEnd();
+						glColor3f(0.0, 0.25, 0.25);
+						glBegin(GL_LINE_STRIP);
+						for (point3 point : TabRight) {
+							//EFGH
+							glVertex3f(i + point.x, j + point.y, k + point.z);
+						}
+						glEnd();
+						glColor3f(0.25, 0.0, 0.25);
+						glBegin(GL_LINE_STRIP);
+						for (point3 point : TabTop) {
+							//CDGH
+							glVertex3f(i + point.x, j + point.y, k + point.z);
+						}
+						glEnd();
+						glColor3f(0.25, 0.25, 0.25);
+						glBegin(GL_LINE_STRIP);
+						for (point3 point : TabDown) {
+							//ABEF
+							glVertex3f(i + point.x, j + point.y, k + point.z);
+						}
+						glEnd();
+					}
+				}				
+			}
+		}
+	}*/
+
+
+	// Potentiel 
+	
+	float potMin = 0.0;
+	float potMax = 0.0;
+
+	glColor3f(0.25, 0.25, 0.25);
+	for (int i = -50; i < 50; i++) {
+		for (int j = -50; j < 50; j++) {
+			for (int k = -50; k < 50; k++) {
+				//for (int m = 0; m < 4; m++) {
+					if (potentiel(point3(i, j, k), TabSpheres) < potMin)
+						potMin = potentiel(point3(i, j, k), TabSpheres);
+					if (potentiel(point3(i, j, k), TabSpheres) > potMax)
+						potMax = potentiel(point3(i, j, k), TabSpheres);
+
+					if (potentiel(point3(i,j,k), TabSpheres) > 0.027 ){
+						glColor3f(0.25, 0.25, 0.0);
+						glBegin(GL_LINE_STRIP);
+						for (point3 point : TabLeft) {
+							//ABCD
+							glVertex3f(i + point.x, j + point.y, k + point.z);
+						}
+						glEnd();
+						glColor3f(0.0, 0.25, 0.25);
+						glBegin(GL_LINE_STRIP);
+						for (point3 point : TabRight) {
+							//EFGH
+							glVertex3f(i + point.x, j + point.y, k + point.z);
+						}
+						glEnd();
+						glColor3f(0.25, 0.0, 0.25);
+						glBegin(GL_LINE_STRIP);
+						for (point3 point : TabTop) {
+							//CDGH
+							glVertex3f(i + point.x, j + point.y, k + point.z);
+						}
+						glEnd();
+						glColor3f(0.25, 0.25, 0.25);
+						glBegin(GL_LINE_STRIP);
+						for (point3 point : TabDown) {
+							//ABEF
+							glVertex3f(i + point.x, j + point.y, k + point.z);
+						}
+						glEnd();
+					}
+				//}
+			}
+		}
+	}
+
+	cout << "Potentiel Max: " << potMax << endl;
+	cout << "Potentiel Min: " << potMin << endl;
+}
+
+/*
+void drawCarre() {
 	glColor3f(0.0, 0.5, 0.5);
 	glBegin(GL_TRIANGLES);
 	glVertex3f(A.x, A.y, A.z);
@@ -171,160 +359,23 @@ void render_scene()
 	glVertex3f(E.x, E.y, E.z);
 	glVertex3f(F.x, F.y, F.z);
 	glEnd();
-	*/
-
-	//Left
-	//ABCD
-	point3 TabLeft[5];
-	TabLeft[0] = A;
-	TabLeft[1] = B;
-	TabLeft[2] = D;
-	TabLeft[3] = C;
-	TabLeft[4] = A;
-
-	//Right
-	//EFGH
-	point3 TabRight[5];
-	TabRight[0] = E;
-	TabRight[1] = F;
-	TabRight[2] = H;
-	TabRight[3] = G;
-	TabRight[4] = E;
-
-
-	//Top
-	//CDGH
-	point3 TabTop[5];
-	TabTop[0] = C;
-	TabTop[1] = D;
-	TabTop[2] = H;
-	TabTop[3] = G;
-	TabTop[4] = C;
-
-	//Down
-	//ABEF
-	point3 TabDown[5];
-	TabDown[0] = A;
-	TabDown[1] = B;
-	TabDown[2] = F;
-	TabDown[3] = E;
-	TabDown[4] = A;
-	
-	/*
-	glBegin(GL_LINE_STRIP);
-	for (point3 point : TabLeft) {
-		//ABCD
-		glVertex3f(point.x, point.y, point.z);
-	}
-	glEnd();
-	glBegin(GL_LINE_STRIP);
-	for (point3 point : TabRight) {
-		//EFGH
-		glVertex3f(point.x, point.y, point.z);
-	}
-	glEnd();
-	glBegin(GL_LINE_STRIP);
-	for (point3 point : TabTop) {
-		//CDGH
-		glVertex3f(point.x, point.y, point.z);
-	}
-	glEnd();
-	glBegin(GL_LINE_STRIP);
-	for (point3 point : TabDown) {
-		//ABEF
-		glVertex3f(point.x, point.y, point.z);
-	}
-	glEnd();*/
-
-	//Draw the grid	
-	glColor3f(0.25, 0.25, 0.25);
-	for (int i = -50; i < 50; i++) {
-		for (int j = -50; j < 50; j++) {
-			for (int k = -50; k < 50; k++) {
-				for (int m = 0; m < 4; m++) {
-					if (intersectionSphere(point3(i, j, k), TabSpheres, TabRayons)) {
-						glColor3f(1.0, 0.0, 0.0);
-						glBegin(GL_LINE_STRIP);
-						for (point3 point : TabLeft) {
-							//ABCD
-							glVertex3f(i + point.x, j + point.y, k + point.z);
-						}
-						glEnd();
-						glColor3f(0.75, 0.25, 0.0);
-						glBegin(GL_LINE_STRIP);						
-						for (point3 point : TabRight) {
-							//EFGH
-							glVertex3f(i + point.x, j + point.y, k + point.z);
-						}
-						glEnd();
-						glColor3f(0.75, 0.0, 0.25);
-						glBegin(GL_LINE_STRIP);
-						for (point3 point : TabTop) {
-							//CDGH
-							glVertex3f(i + point.x, j + point.y, k + point.z);
-						}
-						glEnd();
-						glColor3f(0.75, 0.15, 0.10);
-						glBegin(GL_LINE_STRIP);
-						for (point3 point : TabDown) {
-							//ABEF
-							glVertex3f(i + point.x, j + point.y, k + point.z);
-						}
-						glEnd();
-						continue;
-					}
-
-					if (pointAppartientSphere(point3(i, j, k), TabSpheres[m], TabRayons[m])) {
-						glColor3f(0.25, 0.25, 0.0);
-						glBegin(GL_LINE_STRIP);
-						for (point3 point : TabLeft) {
-							//ABCD
-							glVertex3f(i + point.x, j + point.y, k + point.z);
-						}
-						glEnd();
-						glColor3f(0.0, 0.25, 0.25);
-						glBegin(GL_LINE_STRIP);
-						for (point3 point : TabRight) {
-							//EFGH
-							glVertex3f(i + point.x, j + point.y, k + point.z);
-						}
-						glEnd();
-						glColor3f(0.25, 0.0, 0.25);
-						glBegin(GL_LINE_STRIP);
-						for (point3 point : TabTop) {
-							//CDGH
-							glVertex3f(i + point.x, j + point.y, k + point.z);
-						}
-						glEnd();
-						glColor3f(0.25, 0.25, 0.25);
-						glBegin(GL_LINE_STRIP);
-						for (point3 point : TabDown) {
-							//ABEF
-							glVertex3f(i + point.x, j + point.y, k + point.z);
-						}
-						glEnd();
-					}
-				}				
-			}
-		}
-	}	
-}
+}*/
 
 /* Dessin */
 void display(void)
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glLoadIdentity();
-	glRotatef(-angleY, 0.0f, 0.0f, 1.0f);
+	/*glRotatef(-angleY, 0.0f, 0.0f, 1.0f);
 	glRotatef(angleX, 0.0f, 1.0f, 0.0f);
 	glTranslatef(tx, ty, tz);
 
 	glRotatef(-angleY, 0.0f, 0.0f, 1.0f);
-	glRotatef(angleX, 0.0f, 1.0f, 0.0f);
+	glRotatef(angleX, 0.0f, 1.0f, 0.0f);*/
 
 	render_scene();
-	glPushMatrix();
-	glRotatef(-90, 1.0f, 0.0f, 0.0f);
+	/*glPushMatrix();
+	glRotatef(-90, 1.0f, 0.0f, 0.0f);*/
 
 	glColor3f(0.8, 0.8, 0.8);
 
@@ -430,6 +481,22 @@ int main(int argc, char **argv)
 	glutReshapeFunc(reshape);
 	glutKeyboardFunc(&window_key_down);
 	glutDisplayFunc(display);
+
+	point3 p1 = point3(-20, -20, -20);
+	point3 p2 = point3(25, 0, 0);
+	point3 p3 = point3(-25, 0, 0);
+	point3 p4 = point3(0, 0, 0);
+
+	point3 tab[2];
+	tab[0] = p3;
+	tab[1] = p2;
+
+	cout << distanceEntre2Points(p1, p2) << endl;
+	float pot = potentiel(p1, tab);
+	cout << pot << endl;
+	pot = potentiel(p4, tab);
+	cout << pot << endl;
+
 	glutPassiveMotionFunc(gestionSouris);
 	glutSpecialFunc(&gestionFleche);
 	glutMainLoop();
